@@ -12,8 +12,6 @@ export const expiresIn = process.env.EXPIRESIN || config.expiresIn;
 // export const adminName = process.env.ADMIN_NAME || config.adminName;
 // export const adminEmail = process.env.ADMIN_EMAIL || config.adminEmail;
 // export const adminPassword = process.env.ADMIN_PASSWORD || config.adminPassword;
-// export const adminPhoneNumber = process.env.ADMIN_PHONENUMBER || config.adminPhoneNumber;
-// export const adminProfilePicture = process.env.ADMIN_PROFILE_PICTURE || config.adminProfilePicture;
 export const mailchimp_email = process.env.MAILCHIMP_EMAIL || config.mailchimp_email;
 export const mailchimp_api_key = process.env.MAILCHIMP_API_KEY || config.mailchimp_api_key;
 
