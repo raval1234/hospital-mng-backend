@@ -70,10 +70,10 @@ async function c_patient(req, res, next) {
       doctor,
     });
 
-    if (!patients)
-      return next(
-        new APIError(ErrMessages.patientcreate, httpStatus.UNAUTHORIZED, true)
-      );
+    // if (!patients)
+    //   return next(
+    //     new APIError(ErrMessages.patientcreate, httpStatus.UNAUTHORIZED, true)
+    //   );
 
     const userData = await Patient.findOne({ email });
     sendresetpassword(userData.first_name, userData.email);
