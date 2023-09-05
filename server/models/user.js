@@ -1,52 +1,53 @@
-const mongoose = require('mongoose');
-import bcrypt from 'bcrypt';
-
+const mongoose = require("mongoose");
+import bcrypt from "bcrypt";
 
 const create_user = new mongoose.Schema({
-
   first_name: {
-    type: String
+    type: String,
   },
   last_name: {
-    type: String
+    type: String,
   },
   email: {
-    type: String
+    type: String,
+    require: true,
+    unique: true,
   },
   dob: {
-    type: Date
+    type: Date,
   },
   gender: {
-    type: String
+    type: String,
   },
   weight: {
-    type: Number
+    type: Number,
   },
   height: {
-    type: Number
+    type: Number,
   },
-  diseases: [{
-    type: String
-  }],
- 
-  password:{
-    type:String,
-    require:true
-    
+  diseases: [
+    {
+      type: String,
+    },
+  ],
+  password: {
+    type: String,
+    require: true,
   },
-  
-  token:{
-    type:String
-  },
+  token: [
+    {
+      type: String,
+    },
+  ],
   doctor: {
     type: mongoose.Types.ObjectId,
-    ref: 'doctor',
+    ref: "doctor",
   },
 });
 
-create_user.pre('save', async function (next) {
+create_user.pre("save", async function (next) {
   const user = this;
-  if (user.isModified('password')) {
+  if (user.isModified("password")) {
     user.password = await bcrypt.hash(user.password, 12);
   }
 
@@ -57,4 +58,4 @@ create_user.methods.matchPassword = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
-module.exports = mongoose.model('user', create_user);
+module.exports = mongoose.model("user", create_user);

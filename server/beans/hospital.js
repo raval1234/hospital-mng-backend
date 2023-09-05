@@ -3,8 +3,10 @@ const Appointment = require("../../server/models/appointment");
 const Doctor = require("../models/doctor");
 const Rooms = require("../../server/models/room");
 const Patient = require("../../server/models/patient");
+import APIError from "../helpers/APIError";
+const { ErrMessages, SuccessMessages } = require("../helpers/AppMessages");
 
-async function c_hospital(req, res) {
+async function c_hospital(req, res, next) {
   try {
     let { name, address, call_num } = req.body;
 
@@ -13,20 +15,29 @@ async function c_hospital(req, res) {
       address,
       call_num,
     });
-    if (!data) return res.status(400).send("Data Not Create");
 
-    res.status(200).json({ message: "hospital created" });
+    if (!data)
+      return next(
+        new APIError(ErrMessages.hospitalcreate, httpStatus.UNAUTHORIZED, true)
+      );
+
+    next(SuccessMessages.hospitalcreate);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    return next(
+      new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true, err)
+    );
   }
 }
 
-async function d_hospital(req, res) {
+async function d_hospital(req, res, next) {
   try {
     let hospita_id = req.query.hospita_id;
 
     let hptl = await Hospital.findOne({ _id: hospita_id });
-    if (!hptl) return res.status(400).send("Data Not find");
+    if (!hptl)
+      return next(
+        new APIError(ErrMessages.hospitalfound, httpStatus.UNAUTHORIZED, true)
+      );
 
     if (hptl) {
       for (const d of hptl.doctorsId) {
@@ -51,51 +62,67 @@ async function d_hospital(req, res) {
       await Hospital.deleteOne({ _id: hospita_id });
     }
 
-    res.status(200).json({ hptl });
+    next(SuccessMessages.hospitaldelete);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 }
 
-async function list_hospital(req, res) {
+async function list_hospital(req, res, next) {
   try {
     let srt = await Hospital.find({}).select(
       "-_id name address call_num doctorsId"
     );
 
-    if (!srt) return res.status(400).send("patient data not create");
+    if (!srt)
+      return next(
+        new APIError(ErrMessages.hospitalfound, httpStatus.UNAUTHORIZED, true)
+      );
 
-    res.status(200).json({ srt });
+    next(srt);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    return next(
+      new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true, err)
+    );
   }
 }
 
-async function get_hospital(req, res) {
+async function get_hospital(req, res, next) {
   try {
     let hospita_id = req.query.hospita_id;
 
     let hptl = await Hospital.find({ _id: hospita_id });
 
-    if (!hptl) return res.status(400).send("Data Not find");
+    if (!hptl)
+      return next(
+        new APIError(ErrMessages.hospitalfound, httpStatus.UNAUTHORIZED, true)
+      );
 
-    res.status(200).json({ hptl });
+    next(hptl);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    return next(
+      new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true, err)
+    );
   }
 }
 
-async function update_hospital(req, res) {
+async function update_hospital(req, res, next) {
   try {
     let { hospita_id, address } = req.query;
 
     let hptl = await Hospital.updateOne({ _id: hospita_id }, { address });
 
-    if (!hptl) return res.status(400).send("Data Not find");
+    if (!hptl)
+      return next(
+        new APIError(ErrMessages.hospitalupdate, httpStatus.UNAUTHORIZED, true)
+      );
 
-    res.status(200).json({ hptl });
+    next(SuccessMessages.hospitalupdate);
+
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    return next(
+      new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true, err)
+    );
   }
 }
 
@@ -106,4 +133,3 @@ module.exports = {
   get_hospital,
   list_hospital,
 };
-

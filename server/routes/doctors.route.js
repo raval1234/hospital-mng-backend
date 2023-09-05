@@ -12,5 +12,5 @@ router.get('/doctorlist', doctor.list_doctor);
 router.get('/doctorappoint', doctor.appoint_doctor);
 
 module.exports = router;
-
+ 
 

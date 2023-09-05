@@ -2,16 +2,21 @@ const mongoose = require('mongoose');
 
 const create_doctors = new mongoose.Schema({
     name:{
-        type:String
+        type:String,
+        require:true
     },
     call_num:{
-        type:String
+        type:String,
+        require:true
     },
     email:{
-        type:String
+        type:String,
+        require:true,
+        unique: true
     },
     gender:{
-        type:String
+        type:String,
+        require:true
     },
     hospitalId:{
         type: mongoose.Types.ObjectId,

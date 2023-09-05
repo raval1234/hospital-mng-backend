@@ -1,14 +1,5 @@
 const mongoose = require('mongoose');
 
-// const diseasesSchema = new mongoose.Schema({
-//   symptoms: {
-//     type: String
-//   },
-//   cause: {
-//     type: String
-//   }
-// });
-// diseases :[diseasesSchema],
 
 
 const create_patient = new mongoose.Schema({
@@ -20,7 +11,9 @@ const create_patient = new mongoose.Schema({
     type: String
   },
   email: {
-    type: String
+    type: String,
+    require:true,
+    unique: true
   },
   dob: {
     type: Date

@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const appointment = new mongoose.Schema({
      
    reason:{
-        type:String
+        type:String,
+        require:true
    }, 
    time:{
         type:Date,

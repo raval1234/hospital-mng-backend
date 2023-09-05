@@ -1,6 +1,7 @@
 const Patient = require("../../models/patient");
+const Appointment = require("../../server/models/appointment");
 
-async function pagination(req, res) {
+async function pagination(req, res, next) {
   try {
     let { page_size, page_number } = req.query;
     page_size = parseInt(page_size);
@@ -19,9 +20,11 @@ async function pagination(req, res) {
 
     let totalCount = await Patient.find({}).countDocuments();
     let totalPage = Math.ceil(totalCount / page_size);
-    res.status(200).json({ patientList, totalPage, page_number });
+    next({ patientList, totalPage, page_number });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return next(
+      new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true, err)
+    );
   }
 }
 

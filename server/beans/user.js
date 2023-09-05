@@ -46,7 +46,7 @@ async function c_user(req, res, next) {
         new APIError(ErrMessages.userCreate, httpStatus.UNAUTHORIZED, true)
       );
 
-    next(users);
+    next(SuccessMessages.userCreate);
   } catch (err) {
     return next(
       new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true, err)
@@ -147,13 +147,7 @@ const forget_password = async (req, res, next) => {
         );
       sendresetpassword(findMail.first_name, findMail.email, tkn);
 
-      next(
-        new APIError(
-          SuccessMessages.forgetPassword,
-          httpStatus.UNAUTHORIZED,
-          true
-        )
-      );
+      next(SuccessMessages.forgetPassword);
     }
   } catch (err) {
     return next(
@@ -164,9 +158,9 @@ const forget_password = async (req, res, next) => {
 
 async function reset_password(req, res, next) {
   try {
-    let tokens = req.query.tokens;
-    let find_token = await user.findOne({ tokens });
-    if (!tokens)
+    let token = req.query.token;
+    let find_token = await user.findOne({ token });
+    if (!find_token)
       return next(
         new APIError(ErrMessages.tokenNot, httpStatus.UNAUTHORIZED, true)
       );
@@ -181,8 +175,8 @@ async function reset_password(req, res, next) {
       return next(
         new APIError(ErrMessages.sessionExpired, httpStatus.UNAUTHORIZED, true)
       );
-    res.status(200).json({ success: true, msg: "reset password successfully" });
-    next(set_pass);
+
+    next(SuccessMessages.resetpassword);
   } catch (err) {
     return next(
       new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true, err)
@@ -221,7 +215,7 @@ async function reset(req, res, next) {
       );
 
     // res.send({ message: "Password changed successfully!" });
-    next(update);
+    next(SuccessMessages.resetpassword);
   } catch (err) {
     return next(
       new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true, err)
@@ -229,10 +223,60 @@ async function reset(req, res, next) {
   }
 }
 
+async function login_user(req, res, next) {
+  try {
+    let { email, password } = req.body;
+
+    let users = await user.findOne({ email });
+
+    let pass = await bcrypt.compare(password, users.password);
+
+    if (!pass)
+      return next(
+        new APIError(ErrMessages.wrongPassword, httpStatus.UNAUTHORIZED, true)
+      );
+
+    let tkn = await jwt.sign(
+      {
+        last_name: users.email,
+      },
+      secret
+    );
+
+    if (!tkn)
+      return next(
+        new APIError(ErrMessages.tokenNotCreated, httpStatus.UNAUTHORIZED, true)
+      );
+
+    await user.findOneAndUpdate(
+      { email },
+      {
+        $push: {
+          token: {
+            $each: [tkn],
+            $slice: -3,
+          },
+        },
+      }
+    );
+ 
+    if (!login)
+      return next(
+        new APIError(ErrMessages.wrongPassword, httpStatus.UNAUTHORIZED, true)
+      );
+
+    next(SuccessMessages.loginsuch);
+  } catch (err) {
+    return next(
+      new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true, err)
+    );
+  }
+}
 module.exports = {
   c_user,
   login,
   forget_password,
   reset_password,
   reset,
+  login_user,
 };

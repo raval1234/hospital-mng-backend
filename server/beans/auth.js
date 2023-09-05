@@ -11,14 +11,17 @@ async function authorize(req, res, next) {
   try {
     let token;
     let error;
+    console.log(typeof req.headers.authorization);
+
     if (req.headers.authorization) {
       if (
         typeof req.headers.authorization !== "string" ||
-        req.headers.authorization.indexOf("Bearer ") === -1
+        req.headers.authorization.indexOf("Bearer") === -1
       ) {
         error = ErrMessages.badAuth;
       } else {
         token = req.headers.authorization.split(" ")[1];
+        console.log(token);
       }
     } else {
       error = ErrMessages.tokenNot;

@@ -1,27 +1,39 @@
 const Rooms = require("../../server/models/room");
+import APIError from "../helpers/APIError";
+const { ErrMessages, SuccessMessages } = require("../helpers/AppMessages");
 
-async function c_room(req, res) {
+async function c_room(req, res, next) {
   try {
     let { name, available } = req.body;
     let rooms = await Rooms.create({
       name,
       available,
     });
-    if (!rooms) return res.status(400).send("Room data not create");
+    if (!rooms)
+      return next(
+        new APIError(ErrMessages.roomcrete, httpStatus.UNAUTHORIZED, true)
+      );
 
-    res.status(200).json({ rooms });
+    next(SuccessMessages.roomcrete);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return next(
+      new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true, err)
+    );
   }
 }
 
-async function room_available(req, res) {
+async function room_available(req, res, next) {
   try {
     let rooms = await Rooms.find({ available: { $eq: false } }).select("name");
-    if (!rooms) return res.status(400).send("Room data not create");
-    res.status(200).json({ rooms });
+    if (!rooms)
+      return next(
+        new APIError(ErrMessages.roomnotfound, httpStatus.UNAUTHORIZED, true)
+      );
+    next(rooms);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return next(
+      new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true, err)
+    );
   }
 }
 

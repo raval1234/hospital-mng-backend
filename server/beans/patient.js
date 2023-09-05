@@ -4,6 +4,8 @@ const Patient = require("../../server/models/patient");
 const nodemailer = require("nodemailer");
 import config from "../../config/config";
 import httpStatus from "http-status";
+import APIError from "../helpers/APIError";
+const { ErrMessages, SuccessMessages } = require("../helpers/AppMessages");
 
 async function sendresetpassword(name, email) {
   try {
@@ -35,7 +37,7 @@ async function sendresetpassword(name, email) {
   }
 }
 
-async function c_patient(req, res) {
+async function c_patient(req, res, next) {
   try {
     let {
       first_name,
@@ -51,7 +53,10 @@ async function c_patient(req, res) {
 
     let patient_exi = await Patient.findOne({ email });
 
-    if (patient_exi) return res.status(400).send("patient alredy exist");
+    if (patient_exi)
+      return next(
+        new APIError(ErrMessages.patient, httpStatus.UNAUTHORIZED, true)
+      );
 
     let patients = await Patient.create({
       first_name,
@@ -65,53 +70,62 @@ async function c_patient(req, res) {
       doctor,
     });
 
-    if (!patients) return res.status(400).send("patient data not create");
+    if (!patients)
+      return next(
+        new APIError(ErrMessages.patientcreate, httpStatus.UNAUTHORIZED, true)
+      );
 
     const userData = await Patient.findOne({ email });
     sendresetpassword(userData.first_name, userData.email);
     console.log("user data : ", userData);
-    res
-      .status(200)
-      .send({
-        success: true,
-        msg: "Please check your inbox mail and reset your Password.",
-      });
 
-    res.status(200).json({ patients });
+    next(SuccessMessages.patientcreate);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return next(
+      new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true, err)
+    );
   }
 }
 
-async function list_patient(req, res) {
+async function list_patient(req, res, next) {
   try {
     let srt = await Patient.find({}).select(
       "-_id first_name last_name email dob gender weight height diseases doctor"
     );
 
-    if (!srt) return res.status(400).send("patient data not create");
+    if (!srt)
+      return next(
+        new APIError(ErrMessages.patientfound, httpStatus.UNAUTHORIZED, true)
+      );
 
-    res.status(200).json({ srt });
+    next(srt);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    return next(
+      new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true, err)
+    );
   }
 }
 
-async function sort_patient(req, res) {
+async function sort_patient(req, res, next) {
   try {
     let srt = await Patient.find({})
       .sort({ first_name: 1 })
       .select("-_id first_name last_name");
 
-    if (!srt) return res.status(400).send("patient data not create");
+    if (!srt)
+      return next(
+        new APIError(ErrMessages.patientfound, httpStatus.UNAUTHORIZED, true)
+      );
 
-    res.status(200).json({ srt });
+    next(srt);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    return next(
+      new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true, err)
+    );
   }
 }
 
-async function search_patient(req, res) {
+async function search_patient(req, res, next) {
   try {
     let email = req.query.email;
 
@@ -119,62 +133,96 @@ async function search_patient(req, res) {
       email: { $regex: email, $options: "ix" },
     }).select("-_id first_name last_name");
 
-    if (!srt) return res.status(400).send("patient data not create");
+    if (!srt)
+      return next(
+        new APIError(ErrMessages.patientfound, httpStatus.UNAUTHORIZED, true)
+      );
 
-    res.status(200).json({ srt });
+    next(srt);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    return next(
+      new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true, err)
+    );
   }
 }
 
-async function delete_patient(req, res) {
+async function delete_patient(req, res, next) {
   try {
     let { ids } = req.query;
     let fd_patient = await Patient.find({ _id: ids });
-    if (!fd_patient) return res.status(400).send("Data Not find Patient");
+    if (!fd_patient)
+      return next(
+        new APIError(ErrMessages.patientfound, httpStatus.UNAUTHORIZED, true)
+      );
 
     let fd_appointment = await Appoint.find({ patientId: ids });
+
     if (!fd_appointment)
-      return res.status(400).send("Data Not find Patient Appointment");
+      return next(
+        new APIError(
+          ErrMessages.appointmentnotfound,
+          httpStatus.UNAUTHORIZED,
+          true
+        )
+      );
     console.log(fd_appointment);
 
     for (const d of fd_appointment) {
       let fd_Room = await Rooms.find({ _id: d.Room });
-      if (!fd_Room) return res.status(400).send("Data Not find Patient Rooms");
-
+      if (!fd_Room)
+        return next(
+          new APIError(ErrMessages.roomfound, httpStatus.UNAUTHORIZED, true)
+        );
       let update_room = await Rooms.findOneAndUpdate(
         { _id: d.Room },
         { available: true }
       );
       if (!update_room)
-        return res.status(400).send("Data Not deleted Patient Rooms");
+        return next(
+          new APIError(ErrMessages.roomupdate, httpStatus.UNAUTHORIZED, true)
+        );
 
       console.log(update_room);
     }
 
     let dlt_patient = await Patient.findByIdAndDelete({ _id: ids });
-    if (!dlt_patient) return res.status(400).send("Data Not deleted : Patient");
-
+    if (!dlt_patient)
+      return next(
+        new APIError(ErrMessages.patientdelete, httpStatus.UNAUTHORIZED, true)
+      );
     let dlt_appointment = await Appoint.findOneAndDelete({ patientId: ids });
     if (!dlt_appointment)
-      return res.status(400).send("Data Not deleted : Appointment");
+      return next(
+        new APIError(
+          ErrMessages.appointmentdelete,
+          httpStatus.UNAUTHORIZED,
+          true
+        )
+      );
 
-    res.status(200).json({ fd_patient, fd_appointment });
+    next(SuccessMessages.patientdelete);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return next(
+      new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true, err)
+    );
   }
 }
 
-async function update_patient(req, res) {
+async function update_patient(req, res, next) {
   try {
     let { _id, email, weight } = req.query;
 
     let update = await Patient.updateOne({ _id }, { email, weight });
-    if (!update) return res.status(400).send("Data Not find");
+    if (!update)
+      return next(
+        new APIError(ErrMessages.patientupdate, httpStatus.UNAUTHORIZED, true)
+      );
 
-    res.status(200).json({ update });
+    next(SuccessMessages.patientupdate);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return next(
+      new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true, err)
+    );
   }
 }
 

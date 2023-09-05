@@ -2,13 +2,15 @@ const mongoose = require('mongoose');
 
 const create_hospital = new mongoose.Schema({
     name:{
-        type:String
+        type:String,
+        require:true
     },
     address:{
         type:String
     },
     call_num:{
-        type:String
+        type:String,
+        require:true,
     },
     doctorsId:[{
         type: mongoose.Types.ObjectId,
