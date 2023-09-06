@@ -12,10 +12,11 @@ const create_hospital = new mongoose.Schema({
         type:String,
         require:true,
     },
-    doctorsId:[{
+    doctors:[{
         type: mongoose.Types.ObjectId,
         ref: 'doctor',
     }],
 });
 
 module.exports = mongoose.model('hospital', create_hospital);
+ 

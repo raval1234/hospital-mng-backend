@@ -20,10 +20,10 @@ const patientParams = {
     }),
   },
   patient_update: {
-    query: Joi.object({
+    body: Joi.object({
       _id: Joi.string().hex().required(),
-      email: Joi.string().required(),
-      weight: Joi.string().required(),
+      email: Joi.string(),
+      weight: Joi.string(),
     }),
   },
   delete_patient: {

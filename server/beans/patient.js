@@ -89,9 +89,19 @@ async function c_patient(req, res, next) {
 
 async function list_patient(req, res, next) {
   try {
-    let srt = await Patient.find({}).select(
-      "-_id first_name last_name email dob gender weight height diseases doctor"
+    // let populate = [{ path: "doctor", select: "-_id name " }];
+    // let srt = await Patient.find({})
+    //   .select(
+    //     "-_id first_name last_name email dob gender weight height diseases doctor"
+    //   )
+    //   .populate(populate);
+
+    let doctor = req.query.doctor;
+
+    let srt = await Patient.find({ doctor }).select(
+      "-_id first_name last_name email dob gender weight height diseases "
     );
+    console.log(srt);
 
     if (!srt)
       return next(
@@ -210,9 +220,14 @@ async function delete_patient(req, res, next) {
 
 async function update_patient(req, res, next) {
   try {
-    let { _id, email, weight } = req.query;
+    let { _id, email, weight } = req.body;
 
-    let update = await Patient.updateOne({ _id }, { email, weight });
+    let updatedValue = { _id, email, weight };
+    if (email) updatedValue.email = email;
+    if (weight) updatedValue.weight = parseInt(weight);
+
+    let update = await Patient.updateOne({ _id }, updatedValue);
+    // let update = await Patient.updateOne({ _id }, { email, weight });
     if (!update)
       return next(
         new APIError(ErrMessages.patientupdate, httpStatus.UNAUTHORIZED, true)
@@ -226,86 +241,6 @@ async function update_patient(req, res, next) {
   }
 }
 
-// async function email_patient(req, res) {
-
-//     try {
-//         sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-//         const msg = {
-//           to: 'jaymdtech@gmail.com',
-//           from: 'rchetan617@gmail.com', // Use the email address or domain you verified above
-//           subject: 'Sending with Twilio SendGrid is Fun',
-//           text: 'and easy to do anywhere, even with Node.js',
-//           html: '<strong>and easy to do anywhere, even with Node.js</strong>',
-//         };
-//         //ES6
-//         sgMail
-//           .send(msg)
-//           .then(() => {}, error => {
-//             console.error(error);
-
-//             if (error.response) {
-//               console.error(error.response.body)
-//             }
-//           });
-//         res.status(200).json({ msg });
-//     }
-//     catch (err) {
-//         res.status(500).json({ message: err.message });
-//     }
-// }
-
-// const sendresetpassword = async (name, email) => {
-//     try {
-//         const transporter = nodemailer.createTransport({
-//             host: 'smtp.gmail.com',
-//             port: 587,
-//             secure: false,
-//             requireTLS: true,
-//             auth: {
-//                 user: config.emailUser,
-//                 pass: config.emailPassword
-//             }
-//         });
-
-//         const mailOptions = {
-//             from: config.emailUser,
-//             to: email,
-//             subject: 'For Reset Password',
-//             html: '<p>Hii ' + name + ', your passsword.</p>'
-
-//         }
-//         transporter.sendMail(mailOptions, function (error, info) {
-//             if (error) {
-//                 console.log(error);
-//             }
-//             else {
-//                 console.log("Email Has been sent: ", info.response);
-//             }
-//         });
-//     }
-//     catch (error) {
-//         res.status(400).send({ success: false, msg: error.message });
-//     }
-// }
-// const forget_password = async (req, res) => {
-//     try {
-//         const email = req.body.email;
-//         const userData = awaitUser.findOne({ email: email });
-//         if (userData) {
-//             const randomstrings = randomstrings.generate();
-//             const data = await User.updateOne({ email: email }, { $set: { token: randomstrings } });
-//             sendresetpassword(userData.name, userData.email, randomstrings)
-//             res.status(200).send({ success: true, msg: "Please check your inbox mail and reset your Password." });
-//         }
-//         else {
-//             res.status(500).send({ success: true, msg: "This Email does not exists." });
-//         }
-//     }
-//     catch (error) {
-//         res.status(400).send({ success: false, msg: error.message });
-//     }
-// }
-
 module.exports = {
   c_patient,
   sort_patient,
@@ -313,6 +248,4 @@ module.exports = {
   update_patient,
   delete_patient,
   list_patient,
-  // email_patient
-  // testSendEmailFromTemplate
 };

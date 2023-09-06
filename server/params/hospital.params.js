@@ -16,7 +16,7 @@ const hospitanParams = {
   },
   hospital_get: {
     query: Joi.object({
-      hospita_id: Joi.string().required(),
+      _id: Joi.string().required(),
     }),
   },
   delete_hospital: {

@@ -24,7 +24,7 @@ router.put(
 router.get(
   "/deletepatient",
   validate(patientParams.delete_patient),
-  patient.list_patient
+  patient.delete_patient
 );
 // router.post('/email',patient.email_patient);
 // router.get('/getmail',patient.sendresetpassword)

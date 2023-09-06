@@ -7,8 +7,6 @@ import httpStatus from "http-status";
 const nodemailer = require("nodemailer");
 import config from "../../config/config";
 import { ErrMessages, SuccessMessages } from "../helpers/AppMessages";
-const jwt = require("jsonwebtoken");
-import { jwtSecret } from "../../bin/www";
 
 async function sendresetpassword(name, email) {
   try {
@@ -88,16 +86,9 @@ async function c_doctor(req, res, next) {
 
 async function list_doctor(req, res, next) {
   try {
-    // let srt = await Doctor.find({}).select(
-    //   "-_id name call_num email gender hospitalId"
-    // );
-    let data = {
-      time: Date(),
-      userId: 12,
-    };
-
-    const token = jwt.sign(data, jwtSecret);
-    console.log(token);
+    let srt = await Doctor.find({}).select(
+      "-_id name call_num email gender hospitalId"
+    );
 
     let srts = await Doctor.aggregate([
       {
@@ -207,6 +198,61 @@ async function appoint_doctor(req, res, next) {
   }
 }
 
+async function get_doctor(req, res, next) {
+  try {
+    // Pagination
+    let page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 10;
+    let skip = (page - 1) * limit;
+
+    // Sorting
+    let sort = {};
+    if (req.query.sort) {
+      sort[req.query.sort] = 1; // 1 for ascending, -1 for descending
+    }
+
+    // Filtering
+    let filter = {};
+    if (req.query.date) {
+      filter.date = new Date(req.query.date);
+    }
+
+    // Searching
+    if (req.query.search) {
+      filter.name = new RegExp(req.query.search, "i"); // case-insensitive search
+    }
+
+    let srts = await Doctor.aggregate([
+      {
+        $match: filter,
+      },
+      {
+        $project: {
+          _id: 0,
+          name: 1,
+          email: 1,
+          call_num: 1,
+          gender: 1,
+          hospitalId: 1,
+        },
+      },
+    ])
+      .sort(sort)
+      .skip(skip)
+      .limit(limit);
+
+    if (!srts || srts.length === 0)
+      return next(
+        new APIError(ErrMessages.doctorfind, httpStatus.UNAUTHORIZED, true)
+      );
+
+    res.json(srts); // Send the results back as a JSON response
+  } catch (err) {
+    return next(
+      new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true, err)
+    );
+  }
+}
 
 module.exports = {
   c_doctor,
@@ -214,5 +260,5 @@ module.exports = {
   update_doctor,
   list_doctor,
   appoint_doctor,
- 
+  get_doctor,
 };

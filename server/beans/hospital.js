@@ -70,16 +70,36 @@ async function d_hospital(req, res, next) {
 
 async function list_hospital(req, res, next) {
   try {
-    let srt = await Hospital.find({}).select(
-      "-_id name address call_num doctorsId"
-    );
+    // let srt = await Hospital.find({}).select(
+    //   "-_id name address call_num doctorsId"
+    // );
 
-    if (!srt)
+    let data = await Hospital.aggregate([
+      {
+        $lookup: {
+          from: "doctors",
+          localField: "doctors",
+          foreignField: "_id",
+          as: "doctorName",
+        },
+      },
+
+      {
+        $project: {
+          _id: 0,
+          name: 1,
+          "doctorName.name": 1,
+          "doctorName.email": 1,
+        },
+      },
+    ]);
+
+    if (!data)
       return next(
         new APIError(ErrMessages.hospitalfound, httpStatus.UNAUTHORIZED, true)
       );
 
-    next(srt);
+    next(data);
   } catch (err) {
     return next(
       new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true, err)
@@ -88,10 +108,12 @@ async function list_hospital(req, res, next) {
 }
 
 async function get_hospital(req, res, next) {
-  try {
-    let hospita_id = req.query.hospita_id;
-
-    let hptl = await Hospital.find({ _id: hospita_id });
+    try {
+      let filter = { _id: req.query._id };
+  
+      let populate = [{ path: 'doctors', select: '-_id name'}];
+      let hptl = await Hospital.find(filter).populate(populate);
+      console.log(hptl)
 
     if (!hptl)
       return next(
@@ -118,7 +140,6 @@ async function update_hospital(req, res, next) {
       );
 
     next(SuccessMessages.hospitalupdate);
-
   } catch (err) {
     return next(
       new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true, err)
