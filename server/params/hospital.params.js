@@ -9,9 +9,8 @@ const hospitanParams = {
     }),
   },
   hospital_update: {
-    query: Joi.object({
-      hospita_id: Joi.string().required(),
-      address: Joi.string().required(),
+    body: Joi.object({
+      _id: Joi.string().required(),
     }),
   },
   hospital_get: {

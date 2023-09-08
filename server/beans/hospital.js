@@ -3,6 +3,9 @@ const Appointment = require("../../server/models/appointment");
 const Doctor = require("../models/doctor");
 const Rooms = require("../../server/models/room");
 const Patient = require("../../server/models/patient");
+const ObjectId = require("mongoose").Types.ObjectId;
+import httpStatus from "http-status";
+
 import APIError from "../helpers/APIError";
 const { ErrMessages, SuccessMessages } = require("../helpers/AppMessages");
 
@@ -108,12 +111,12 @@ async function list_hospital(req, res, next) {
 }
 
 async function get_hospital(req, res, next) {
-    try {
-      let filter = { _id: req.query._id };
-  
-      let populate = [{ path: 'doctors', select: '-_id name'}];
-      let hptl = await Hospital.find(filter).populate(populate);
-      console.log(hptl)
+  try {
+    let filter = { _id: req.query._id };
+
+    let populate = [{ path: "doctors", select: "-_id name" }];
+    let hptl = await Hospital.find(filter).populate(populate);
+    console.log(hptl);
 
     if (!hptl)
       return next(
@@ -130,9 +133,18 @@ async function get_hospital(req, res, next) {
 
 async function update_hospital(req, res, next) {
   try {
-    let { hospita_id, address } = req.query;
+    let { _id, name, call_num, address, doctors } = req.body;
 
-    let hptl = await Hospital.updateOne({ _id: hospita_id }, { address });
+    let updatedValue = {};
+    if (name) updatedValue.name = name;
+    if (call_num) updatedValue.call_num = call_num;
+    if (address) updatedValue.address = address;
+    if (doctors) {
+      let doctorId = ObjectId(doctors);
+      updatedValue.$push = { doctors: doctorId };
+    }
+
+    let hptl = await Hospital.updateOne({ _id }, updatedValue);
 
     if (!hptl)
       return next(

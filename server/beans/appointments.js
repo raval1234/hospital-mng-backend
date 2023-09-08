@@ -129,15 +129,54 @@ async function appointmentTime(req, res, next) {
       "-_id  time name reason doctor patient roomId "
     );
     if (!srt)
-      return next( 
+      return next(
         new APIError(ErrMessages.patientnotfound, httpStatus.UNAUTHORIZED, true)
-      ); 
+      );
 
     next(date);
-
   } catch (err) {
     return next(
       new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true, err)
+    );
+  }
+}
+
+async function listAppointments(req, res, next) {
+  try {
+    let { searchString, page_size = 10, page_number = 1 } = req.query;
+
+    page_size = parseInt(page_size);
+    page_number = parseInt(page_number);
+
+    let select = "_id reason time doctor patient roomId";
+    let filter = {};
+
+    let searchFilter = {
+      $or: [
+        { reason: { $regex: searchString, $options: "i" } },
+        // { email: { $regex: searchString, $options: 'i' }}
+      ],
+    };
+
+    if (searchString && searchString.length > 0) filter = { ...searchFilter };
+    const totalRecords = await Appointment.find(filter).countDocuments();
+    const page_count = totalRecords / page_size || 1;
+
+    if (Math.ceil(page_count) < page_number) {
+      page_number = 1;
+    }
+
+    let appointments = await Appointment.find(filter)
+      .select(select)
+      .sort({ reason: -1 })
+      .skip((page_number - 1) * page_size)
+      .limit(page_size);
+
+    next({ appointments, totalRecords, page_count: Math.ceil(page_count) });
+  } catch (err) {
+    console.log(err);
+    return next(
+      new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true)
     );
   }
 }
@@ -147,4 +186,5 @@ module.exports = {
   checkout_patient,
   list_appoint,
   appointmentTime,
+  listAppointments,
 };

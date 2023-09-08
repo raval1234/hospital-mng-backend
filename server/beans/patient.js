@@ -5,6 +5,7 @@ const nodemailer = require("nodemailer");
 import config from "../../config/config";
 import httpStatus from "http-status";
 import APIError from "../helpers/APIError";
+const ObjectId = require("mongoose").Types.ObjectId;
 const { ErrMessages, SuccessMessages } = require("../helpers/AppMessages");
 
 async function sendresetpassword(name, email) {
@@ -220,12 +221,33 @@ async function delete_patient(req, res, next) {
 
 async function update_patient(req, res, next) {
   try {
-    let { _id, email, weight } = req.body;
+    let {
+      _id,
+      first_name,
+      last_name,
+      email,
+      dob,
+      gender,
+      height,
+      weight,
+      diseases,
+      doctor,
+    } = req.body;
 
-    let updatedValue = { _id, email, weight };
+    let updatedValue = {};
+    if (first_name) updatedValue.first_name = first_name;
+    if (last_name) updatedValue.last_name = last_name;
     if (email) updatedValue.email = email;
+    if (dob) updatedValue.dob = new Date(dob);
+    if (gender) updatedValue.gender = gender;
+    if (height) updatedValue.height = parseInt(height);
     if (weight) updatedValue.weight = parseInt(weight);
-
+    if (diseases) updatedValue.diseases = diseases;
+    if (doctor) {
+      let doctorID = ObjectId(doctor);
+      updatedValue.$push = { doctor: doctorID };
+    }
+    console.log(updatedValue);
     let update = await Patient.updateOne({ _id }, updatedValue);
     // let update = await Patient.updateOne({ _id }, { email, weight });
     if (!update)

@@ -10,8 +10,8 @@ const doctorsParams = {
       hospitalId: Joi.string().hex().required(),
     }),
   },
-  doctors_update: { 
-    query: Joi.object({
+  doctors_update: {
+    body: Joi.object({
       email: Joi.string().required(),
       ids: Joi.string().hex().required(),
     }),

@@ -1,22 +1,23 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const create_hospital = new mongoose.Schema({
-    name:{
-        type:String,
-        require:true
+  name: {
+    type: String,
+    require: true,
+  },
+  address: {
+    type: String,
+  },
+  call_num: {
+    type: String,
+    require: true,
+  },
+  doctors: [
+    {
+      type: mongoose.Types.ObjectId,
+      ref: "doctor",
     },
-    address:{
-        type:String
-    },
-    call_num:{
-        type:String,
-        require:true,
-    },
-    doctors:[{
-        type: mongoose.Types.ObjectId,
-        ref: 'doctor',
-    }],
+  ],
 });
 
-module.exports = mongoose.model('hospital', create_hospital);
- 
+module.exports = mongoose.model("hospital", create_hospital);

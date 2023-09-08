@@ -1,6 +1,6 @@
-import Joi from 'joi';
+import Joi from "joi";
 
-require('dotenv').config();
+require("dotenv").config();
 
 const envVarsSchema = Joi.object({
   PORT: Joi.number(),
@@ -33,8 +33,8 @@ const config = {
   adminPassword: envVars.ADMIN_PASSWORD,
   adminPhoneNumber: envVars.ADMIN_PHONENUMBER,
   adminProfilePicture: envVars.ADMIN_PROFILE_PICTURE,
-  emailUser:"chetanmdtech@gmail.com",
-  emailPassword:"hbbdyxtoohvfbfbx",
+  emailUser: envVars.emailUser,
+  emailPassword: envVars.emailPassword,
   mailchimp_email: envVars.MAILCHIMP_EMAIL,
   mailchimp_api_key: envVars.MAILCHIMP_API_KEY,
 };

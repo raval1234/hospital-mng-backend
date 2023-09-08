@@ -23,5 +23,6 @@ router
   );
 
 router.route("/appointmentTime").get(appointment.appointmentTime);
+router.route("/listAppointments").get(appointment.listAppointments);
 
 module.exports = router;

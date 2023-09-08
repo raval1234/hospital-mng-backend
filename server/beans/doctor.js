@@ -6,6 +6,7 @@ import APIError from "../helpers/APIError";
 import httpStatus from "http-status";
 const nodemailer = require("nodemailer");
 import config from "../../config/config";
+const ObjectId = require("mongoose").Types.ObjectId;
 import { ErrMessages, SuccessMessages } from "../helpers/AppMessages";
 
 async function sendresetpassword(name, email) {
@@ -139,17 +140,24 @@ async function pd_data(req, res) {
 
 async function update_doctor(req, res, next) {
   try {
-    let { ids, email } = req.query;
+    let { _id, name, call_num, email, gender, hospitalId } = req.body;
 
-    let doctorEmail = await Doctor.findOne({ email });
-
-    if (doctorEmail) {
+    let updatedValue = {};
+    if (name) updatedValue.name = name;
+    if (call_num) updatedValue.call_num = call_num;
+    if (email) updatedValue.email = email;
+    if (gender) updatedValue.gender = gender;
+    if (hospitalId) {
+      let hospital = ObjectId(hospitalId);
+      updatedValue.$push = { hospitalId: hospital };
+    }
+    if (email) {
       return next(
         new APIError(ErrMessages.emailAlredy, httpStatus.CONFLICT, true)
       );
     }
 
-    let update = await Doctor.updateOne({ ids }, { email });
+    let update = await Doctor.updateOne({ _id }, updatedValue);
 
     if (!update)
       return next(

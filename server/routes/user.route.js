@@ -18,7 +18,6 @@ router.get(
   user.reset_password
 );
 router.post("/reset", validate(userParams.reset), user.reset);
-router.get("/login-user",user.login_user);
+router.get("/login-user", user.login_user);
 
-module.exports = router; 
- 
+module.exports = router;
