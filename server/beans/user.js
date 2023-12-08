@@ -1,15 +1,15 @@
+const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
+const randomstring = require("randomstring");
 import user from "../../server/models/user";
 import APIError from "../helpers/APIError";
 import httpStatus from "http-status";
 import bcrypt from "bcrypt";
-const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
 import config from "../../config/config";
-const randomstring = require("randomstring");
+import { jwtSecret } from "../../bin/www";
 import { ErrMessages, SuccessMessages } from "../helpers/AppMessages";
-import { updateOne } from "../models/appointment";
-const secret = "euruaucciuaua";
-const mongoose = require("mongoose");
+
+
 
 async function c_user(req, res, next) {
   try {
@@ -58,14 +58,13 @@ async function login(req, res, next) {
   try {
     let { email, password } = req.body;
     let users = await user.findOne({ email });
-    console.log(users);
+  
     if (!users)
       return next(
         new APIError(ErrMessages.userNotFound, httpStatus.UNAUTHORIZED, true)
       );
     let pass = await bcrypt.compare(password, users.password);
-    console.log("password : ", pass);
-
+   
     if (!pass)
       return next(
         new APIError(ErrMessages.wrongPassword, httpStatus.UNAUTHORIZED, true)
@@ -73,11 +72,11 @@ async function login(req, res, next) {
 
     let tkn = await jwt.sign(
       {
-        last_name: user.last_name,
+        userId: user._id,
       },
-      secret
+      jwtSecret
     );
-    console.log(" token genrate : ", tkn);
+ 
     if (!tkn)
       return next(
         new APIError(ErrMessages.tokenNot, httpStatus.UNAUTHORIZED, true)
@@ -89,8 +88,10 @@ async function login(req, res, next) {
       return next(
         new APIError(ErrMessages.wrongPassword, httpStatus.UNAUTHORIZED, true)
       );
-
-    next({ Token: tkn, UserId: users._id });
+      
+    req.session.user_id= users._id
+    
+    next({ Token: tkn, user_id: users._id });
   } catch (err) {
     return next(
       new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR, true, err)

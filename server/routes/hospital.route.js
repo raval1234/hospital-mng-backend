@@ -4,8 +4,24 @@ import hospitanParams from "../params/hospital.params";
 import hospital from "../beans/hospital";
 const router = express.Router();
 
+
+// import { jwtSecret } from "../../bin/www";
+// import auth from "../../server/beans/auth"
+// const session = require("express-session");
+// const cookieParser = require("cookie-parser");
+
+// // Initialization
+// router.use(cookieParser());
+ 
+// router.use(session({
+//     secret: jwtSecret,
+//     saveUninitialized: true,
+//     resave: true
+// }));
+
+
 router.post(
-  "/hospitalcre",
+  "/hospitalcre",auth.isLogin,
   validate(hospitanParams.hospital_create),
   hospital.c_hospital
 );

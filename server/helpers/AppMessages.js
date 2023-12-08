@@ -4,6 +4,7 @@ export const ErrMessages = {
     "Session expired. you have been logged out, please log in again!",
   userNotFound: "user not found!",
   badToken: "bad token!",
+  userNotLogin:"user not login",
   tokenNot: "token not provided!",
   badAuth: "bad authorization!",
   wrongPassword: "password is wrong ",
