@@ -12,7 +12,7 @@ import expressValidation from "express-validation";
 import APIError from "./server/helpers/APIError";
 import indexRouter from "./server/routes/index";
 import { app_env } from "./bin/www";
-
+ 
 const app = express();
 
 // view engine setup
