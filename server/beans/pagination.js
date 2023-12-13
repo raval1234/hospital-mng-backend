@@ -8,8 +8,8 @@ async function pagination(req, res) {
     let data = await Patient.aggregate([
       { $project: { first_name: 1, last_name: 1, email: 1, gender: 1 } },
       { $skip: (page_number - 1) * page_size },
-      { $limit: page_size }, 
-    ]); 
+      { $limit: page_size },
+    ]);
 
     console.log("daata", data);
     let patientList = await Patient.find({})
