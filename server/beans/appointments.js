@@ -5,7 +5,7 @@ import APIError from "../helpers/APIError";
 import httpStatus from "http-status";
 
 async function c_appoint(req, res, next) {
-  try {
+  try { 
     let { reason, time, email, doctor, room } = req.body;
 
     let find_room = await Rooms.findOneAndUpdate(
