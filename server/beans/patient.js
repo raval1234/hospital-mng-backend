@@ -5,7 +5,7 @@ const nodemailer = require("nodemailer");
 import config from "../../config/config";
 import httpStatus from "http-status";
 
-async function sendresetpassword(name, email) {
+async function sendresetpassword(name, email) { 
   try {
     const transporter = await nodemailer.createTransport({
       host: "smtp.gmail.com",
