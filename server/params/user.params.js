@@ -4,14 +4,14 @@ const userParams = {
   create_user: {
     body: Joi.object({
       first_name: Joi.string().required(),
-      last_name: Joi.string().required(),
+      last_name: Joi.string().email().required(),
       email: Joi.string().required(),
       dob: Joi.string().required(),
       gender: Joi.string().required(),
       weight: Joi.number().required(),
       height: Joi.number().required(),
       diseases: Joi.array().items(Joi.string()).required(),
-      password: Joi.string()
+      password: Joi.string()   
         .min(8)
         .regex(/(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W)/)
         .required()
@@ -21,7 +21,7 @@ const userParams = {
         })),
       doctor: Joi.string().hex().required(),
     }),
-  },
+  }, 
   user_login: {
     body: Joi.object({
       email: Joi.string().required(),
