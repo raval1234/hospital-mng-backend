@@ -83,6 +83,11 @@ async function login(req, res, next) {
         new APIError(ErrMessages.tokenNot, httpStatus.UNAUTHORIZED, true)
       );
 
+     await user.updateOne({ email }, { $set: { token: tkn } });
+
+    req.session.user_id= users._id
+    
+    next({ Token: tkn, user_id: users._id });
     let login = await user.updateOne({ email }, { $set: { token: tkn } });
 
     if (!login)

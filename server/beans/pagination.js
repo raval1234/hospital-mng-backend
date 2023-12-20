@@ -25,35 +25,7 @@ async function pagination(req, res) {
   }
 }
 
-async function pd_data(req, res) {
-  try {
-    let dts = await Patient.aggregate([
-      {
-        $lookup: {
-          from: "doctors",
-          localField: "doctor",
-          foreignField: "_id",
-          as: "enrollee_info",
-        },
-      },
-      {
-        $project: {
-          doctor: { $first: "$enrollee_info" },
-          email: { $first: "$enrollee_info.email" },
-        },
-      },
-      {
-        $sort: {
-          email: 1,
-        },
-      },
-    ]);
 
-    res.status(200).json({ dts });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-}
 
 module.exports = {
   pagination,
